@@ -5,3 +5,5 @@ A quick implementation of an interactive version of the [bongo-cat](https://know
 ### Resources
 
 - [Cat](https://www.reddit.com/r/Bongocat/comments/9d3d4o/og_bongo_cat_use_as_template_for_memes_credit/) - by StrayRogue
+- [Bongo1.wav](https://freesound.org/people/menegass/sounds/99751/) - by [menegass](https://freesound.org/people/menegass/)
+- [Bongo4.wav](https://freesound.org/people/menegass/sounds/99754/) - by [menegass](https://freesound.org/people/menegass/)
