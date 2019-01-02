@@ -8,7 +8,8 @@ import (
 	"io/ioutil"
 	"log"
 	"math"
-	"math/rand"
+
+	"golang.org/x/image/font/gofont/gobold"
 
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font"
@@ -39,7 +40,8 @@ var (
 	leftSound  []byte
 	rightSound []byte
 
-	fnt font.Face
+	fnt     font.Face
+	fntBold font.Face
 )
 
 func init() {
@@ -53,10 +55,18 @@ func init() {
 
 	const dpi = 72
 	fnt = truetype.NewFace(tt, &truetype.Options{
-		Size: 36,
+		Size: 24,
 		DPI:  dpi,
 	})
 
+	tt, err = truetype.Parse(gobold.TTF)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fntBold = truetype.NewFace(tt, &truetype.Options{
+		Size: 24,
+		DPI:  dpi,
+	})
 	// Load audio
 	sampleRate := 44100
 	audioContext, err = audio.NewContext(sampleRate)
@@ -109,23 +119,29 @@ func update(screen *ebiten.Image) error {
 	leftPlaying := inpututil.IsKeyJustPressed(ebiten.KeyA) || inpututil.IsKeyJustPressed(ebiten.KeyLeft)
 	rightPlaying := inpututil.IsKeyJustPressed(ebiten.KeyD) || inpututil.IsKeyJustPressed(ebiten.KeyRight)
 
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-		switch rand.Intn(2) {
-		case 0:
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) || len(inpututil.JustPressedTouchIDs()) > 0 {
+		var x int
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+			x, _ = ebiten.CursorPosition()
+		}
+		if len(inpututil.JustPressedTouchIDs()) > 0 {
+			x, _ = ebiten.TouchPosition(inpututil.JustPressedTouchIDs()[0])
+		}
+		switch {
+		case x < screenWidth/2:
 			leftPlaying = true
-		case 1:
+		default:
 			rightPlaying = true
 		}
 	}
 
+	drawTable(screen)
 	if !leftPlaying {
 		drawLeftCat(screen, leftPlaying)
 	}
-
 	if !rightPlaying {
 		drawRightCat(screen, rightPlaying)
 	}
-
 	drawBongo(screen)
 
 	if leftPlaying {
@@ -138,11 +154,13 @@ func update(screen *ebiten.Image) error {
 		playAudio(rightSound)
 	}
 
-	// drawTable(screen)
-
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %0.2f", ebiten.CurrentTPS()))
 
-	text.Draw(screen, "Use left/right or A/D to play", fnt, 16, screenHeight-16, color.Black)
+	// text.Draw(screen, "- Left bongo:   press left side, left arrow or A", fnt, 16, screenHeight-48, color.Black)
+	text.Draw(screen, "Left bongo:", fntBold, 16, screenHeight-48, color.Black)
+	text.Draw(screen, "press left side, left arrow or A", fnt, 180, screenHeight-48, color.Black)
+	text.Draw(screen, "Right bongo:", fntBold, 16, screenHeight-16, color.Black)
+	text.Draw(screen, "press right side, right arrow or D", fnt, 180, screenHeight-16, color.Black)
 	return nil
 }
 
@@ -150,6 +168,8 @@ const tileSize = 400
 
 func drawTable(screen *ebiten.Image) {
 	ebitenutil.DrawLine(screen, 0, 175, 800, 365, color.RGBA{0xff, 0x00, 0x00, 0xff})
+	table := catImage.SubImage(image.Rect(0, 2*tileSize, 2*tileSize, 3*tileSize)).(*ebiten.Image)
+	screen.DrawImage(table, nil)
 }
 
 func drawLeftCat(screen *ebiten.Image, playing bool) {
