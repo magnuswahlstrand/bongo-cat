@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math"
+	"math/rand"
 
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font"
@@ -107,6 +108,15 @@ func update(screen *ebiten.Image) error {
 
 	leftPlaying := inpututil.IsKeyJustPressed(ebiten.KeyA) || inpututil.IsKeyJustPressed(ebiten.KeyLeft)
 	rightPlaying := inpututil.IsKeyJustPressed(ebiten.KeyD) || inpututil.IsKeyJustPressed(ebiten.KeyRight)
+
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+		switch rand.Intn(2) {
+		case 0:
+			leftPlaying = true
+		case 1:
+			rightPlaying = true
+		}
+	}
 
 	if !leftPlaying {
 		drawLeftCat(screen, leftPlaying)
